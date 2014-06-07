@@ -1,0 +1,14 @@
+﻿<Window x:Class="ModelDanSimulasi.WindowDDos"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="DDos" Height="450" Width="800">
+    <Grid>
+        <!--<Grid.ColumnDefinitions>
+            <ColumnDefinition Name="left"></ColumnDefinition>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Name="right"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" ShowsPreview="True" Width="5"/>-->
+        <ListView Height="100" HorizontalAlignment="Right" Margin="0,75,-222,0" Name="listView1" VerticalAlignment="Top" Width="120" />
+    </Grid>
+</Window>
