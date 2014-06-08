@@ -38,6 +38,8 @@ namespace ModelDanSimulasi
         private Random _random;
         private int targetIndex = -1;
         private ListBox listPing;
+        private List<string> ipReflector = new List<string>();
+        private List<Line> listLineReflector = new List<Line>();
 
         public WindowDDos()
         {
@@ -54,22 +56,34 @@ namespace ModelDanSimulasi
             addHacker();
             addTarget(true);
 
-            listPing = new ListBox()
+            listPing = new ListBox
             {
-                Name="listPing",
-                Margin = new Thickness(X_TARGET + 100, 25, 0,0),
+                Name = "listPing",
+                Margin = new Thickness(X_TARGET + 100, 25, 0, 0),
                 Height = getHeight() - 50,
                 Width = 150
             };
             _canvas.Children.Add(listPing);
 
-            DispatcherTimer timer = new DispatcherTimer()
+            DoubleAnimation fade = new DoubleAnimation()
             {
-                Interval = TimeSpan.FromMilliseconds(500)
+                From = 0.7,
+                To = 0.0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(200))
+            };
+
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
             };
             timer.Tick += (s, e) =>
             {
-                listPing.Items.Add("Ping request from ");
+                int n = _random.Next(listLineReflector.Count) / 2;
+                for (int i = 0; i < n; i++)
+                {
+                    listPing.Items.Add("Ping request from " + _random.Next(255));
+                    listLineReflector[_random.Next(listLineReflector.Count)].BeginAnimation(Line.OpacityProperty, fade);
+                }
             };
             timer.Start();
 
@@ -85,9 +99,14 @@ namespace ModelDanSimulasi
             //(_canvas.Children[5] as Line).BeginAnimation(Line.StrokeThicknessProperty, x);
         }
 
-        public double getHeight()
+        private double getHeight()
         {
             return this.Height - 38;
+        }
+
+        private string getRandomIP()
+        {
+            return _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255);
         }
 
         public void addHacker()
@@ -126,6 +145,8 @@ namespace ModelDanSimulasi
             double reflector1 = ((PICTURE_HEIGHT + LABEL_HEIGHT) - (REFLECTOR_HEIGHT * 2)) / 3;
             double reflector2 = reflector1 * 2 + REFLECTOR_HEIGHT;
             double zombiePosition;
+            string ip;
+            Line line;
             for (int i = 0; i < n; i++)
             {
                 zombiePosition = (PICTURE_HEIGHT + LABEL_HEIGHT + sisa) * i + sisa;
@@ -161,7 +182,8 @@ namespace ModelDanSimulasi
                     Height = REFLECTOR_HEIGHT,
                     Margin = new Thickness(X_REFLECTOR, zombiePosition + reflector2, 0, 0)
                 });
-                _canvas.Children.Add(new Line
+
+                line = new Line
                 {
                     Name = ("lineHackerZombie" + i),
                     X1 = X_HACKER + PICTURE_WIDTH + 10,
@@ -170,8 +192,10 @@ namespace ModelDanSimulasi
                     Y2 = (PICTURE_HEIGHT + LABEL_HEIGHT + sisa) * i + sisa + 32,
                     Stroke = Brushes.Green,
                     StrokeThickness = 2
-                });
-                _canvas.Children.Add(new Line
+                };
+                _canvas.Children.Add(line);
+
+                line = new Line
                 {
                     Name = ("lineZombieReflector" + (2 * i)),
                     X1 = X_ZOMBIE + PICTURE_WIDTH + 10,
@@ -180,18 +204,22 @@ namespace ModelDanSimulasi
                     Y2 = zombiePosition + reflector1 + REFLECTOR_HEIGHT / 2,
                     Stroke = Brushes.Green,
                     StrokeThickness = 1
-                });
-                _canvas.Children.Add(new Line
+                };
+                _canvas.Children.Add(line);
+
+                line = new Line
                 {
-                    Name = ("lineZombieReflector" + (2 * i  + 1)),
+                    Name = ("lineZombieReflector" + (2 * i + 1)),
                     X1 = X_ZOMBIE + PICTURE_WIDTH + 10,
                     Y1 = zombiePosition + PICTURE_HEIGHT / 2,
                     X2 = X_REFLECTOR - 10,
                     Y2 = zombiePosition + reflector2 + REFLECTOR_HEIGHT / 2,
                     Stroke = Brushes.Green,
                     StrokeThickness = 2
-                });
-                _canvas.Children.Add(new Line
+                };
+                _canvas.Children.Add(line);
+
+                line = new Line
                 {
                     Name = ("lineReflectorTarget" + (2 * i)),
                     X1 = X_REFLECTOR + REFLECTOR_WIDTH + 10,
@@ -199,9 +227,13 @@ namespace ModelDanSimulasi
                     X2 = X_TARGET - 10,
                     Y2 = hackerPosition,
                     Stroke = Brushes.Green,
-                    StrokeThickness = 2
-                });
-                _canvas.Children.Add(new Line
+                    StrokeThickness = 2,
+                    Opacity = 0
+                };
+                _canvas.Children.Add(line);
+                listLineReflector.Add(line);
+
+                line = new Line
                 {
                     Name = ("lineReflectorTarget" + (2 * i + 1)),
                     X1 = X_REFLECTOR + REFLECTOR_WIDTH + 10,
@@ -209,8 +241,11 @@ namespace ModelDanSimulasi
                     X2 = X_TARGET - 10,
                     Y2 = hackerPosition,
                     Stroke = Brushes.Green,
-                    StrokeThickness = 2
-                });
+                    StrokeThickness = 2,
+                    Opacity = 0
+                };
+                _canvas.Children.Add(line);
+                listLineReflector.Add(line);
             }
         }
 
