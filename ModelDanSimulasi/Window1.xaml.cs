@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace ModelDanSimulasi
 {
@@ -36,6 +37,7 @@ namespace ModelDanSimulasi
         private BitmapImage hacker, computer, serverOK, serverX;
         private Random _random;
         private int targetIndex = -1;
+        private ListBox listPing;
 
         public WindowDDos()
         {
@@ -51,6 +53,36 @@ namespace ModelDanSimulasi
             addZombie(5);
             addHacker();
             addTarget(true);
+
+            listPing = new ListBox()
+            {
+                Name="listPing",
+                Margin = new Thickness(X_TARGET + 100, 25, 0,0),
+                Height = getHeight() - 50,
+                Width = 150
+            };
+            _canvas.Children.Add(listPing);
+
+            DispatcherTimer timer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromMilliseconds(500)
+            };
+            timer.Tick += (s, e) =>
+            {
+                listPing.Items.Add("Ping request from ");
+            };
+            timer.Start();
+
+            //DDos = new Storyboard();
+            //DoubleAnimation x = new DoubleAnimation()
+            //{
+            //    From = 1.0,
+            //    To = 5.0,
+            //    Duration = new Duration(TimeSpan.FromSeconds(3)),
+            //    AutoReverse = true,
+            //    RepeatBehavior = RepeatBehavior.Forever
+            //};
+            //(_canvas.Children[5] as Line).BeginAnimation(Line.StrokeThicknessProperty, x);
         }
 
         public double getHeight()
@@ -136,8 +168,8 @@ namespace ModelDanSimulasi
                     Y1 = hackerPosition,
                     X2 = X_ZOMBIE - 10,
                     Y2 = (PICTURE_HEIGHT + LABEL_HEIGHT + sisa) * i + sisa + 32,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1
+                    Stroke = Brushes.Green,
+                    StrokeThickness = 2
                 });
                 _canvas.Children.Add(new Line
                 {
@@ -146,7 +178,7 @@ namespace ModelDanSimulasi
                     Y1 = zombiePosition + PICTURE_HEIGHT / 2,
                     X2 = X_REFLECTOR - 10,
                     Y2 = zombiePosition + reflector1 + REFLECTOR_HEIGHT / 2,
-                    Stroke = Brushes.Black,
+                    Stroke = Brushes.Green,
                     StrokeThickness = 1
                 });
                 _canvas.Children.Add(new Line
@@ -156,8 +188,8 @@ namespace ModelDanSimulasi
                     Y1 = zombiePosition + PICTURE_HEIGHT / 2,
                     X2 = X_REFLECTOR - 10,
                     Y2 = zombiePosition + reflector2 + REFLECTOR_HEIGHT / 2,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1
+                    Stroke = Brushes.Green,
+                    StrokeThickness = 2
                 });
                 _canvas.Children.Add(new Line
                 {
@@ -166,8 +198,8 @@ namespace ModelDanSimulasi
                     Y1 = zombiePosition + reflector1 + REFLECTOR_HEIGHT / 2,
                     X2 = X_TARGET - 10,
                     Y2 = hackerPosition,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1
+                    Stroke = Brushes.Green,
+                    StrokeThickness = 2
                 });
                 _canvas.Children.Add(new Line
                 {
@@ -176,8 +208,8 @@ namespace ModelDanSimulasi
                     Y1 = zombiePosition + reflector2 + REFLECTOR_HEIGHT / 2,
                     X2 = X_TARGET - 10,
                     Y2 = hackerPosition,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1
+                    Stroke = Brushes.Green,
+                    StrokeThickness = 2
                 });
             }
         }
