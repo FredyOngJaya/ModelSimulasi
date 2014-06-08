@@ -1,6 +1,6 @@
 ﻿<Window x:Class="ModelDanSimulasi.WindowDDos"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="DDos" Height="540" Width="900">
+    Title="DDos" Height="630" Width="1120">
     <Canvas Name="_canvas"></Canvas>
 </Window>

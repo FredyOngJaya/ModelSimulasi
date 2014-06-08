@@ -36,10 +36,19 @@ namespace ModelDanSimulasi
 
         private BitmapImage hacker, computer, serverOK, serverX;
         private Random _random;
-        private int targetIndex = -1;
+        private Image imageTarget;
+        //private int targetIndex = -1;
         private ListBox listPing;
         private List<string> ipReflector = new List<string>();
         private List<Line> listLineReflector = new List<Line>();
+        private Queue<PingRequest> queuePing = new Queue<PingRequest>();
+
+        struct PingRequest
+        {
+            public string IP;
+            public int lineIndex;
+            public int size;
+        }
 
         public WindowDDos()
         {
@@ -61,42 +70,60 @@ namespace ModelDanSimulasi
                 Name = "listPing",
                 Margin = new Thickness(X_TARGET + 100, 25, 0, 0),
                 Height = getHeight() - 50,
-                Width = 150
+                Width = this.Width - 38 - X_TARGET - 150,
+                IsSynchronizedWithCurrentItem = true
             };
             _canvas.Children.Add(listPing);
 
-            DoubleAnimation fade = new DoubleAnimation()
+            DoubleAnimation fade = new DoubleAnimation
             {
-                From = 0.7,
+                From = 1.0,
                 To = 0.0,
-                Duration = new Duration(TimeSpan.FromMilliseconds(200))
+                Duration = new Duration(TimeSpan.FromMilliseconds(500))
+            };
+
+            DispatcherTimer timerPing = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(300)
+            };
+            timerPing.Tick += (s, e) =>
+            {
+                int idx, n = _random.Next(listLineReflector.Count);
+                for (int i = 0; i < n; i++)
+                {
+                    idx = _random.Next(ipReflector.Count);
+                    listLineReflector[idx].Stroke = Brushes.Green;
+                    listLineReflector[idx].BeginAnimation(Line.OpacityProperty, fade);
+                    queuePing.Enqueue(new PingRequest { IP = ipReflector[idx], lineIndex = idx, size = 64 });
+                }
             };
 
             DispatcherTimer timer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(100)
+                Interval = TimeSpan.FromMilliseconds(300)
             };
             timer.Tick += (s, e) =>
             {
-                int n = _random.Next(listLineReflector.Count) / 2;
-                for (int i = 0; i < n; i++)
+                int n = 4;
+                listPing.Items.Add("Ping proses " + Math.Min(n, queuePing.Count) + " / " + queuePing.Count);
+                while (n-- > 0 && queuePing.Count > 0)
                 {
-                    listPing.Items.Add("Ping request from " + _random.Next(255));
-                    listLineReflector[_random.Next(listLineReflector.Count)].BeginAnimation(Line.OpacityProperty, fade);
+                    PingRequest p = queuePing.Dequeue();
+                    listPing.Items.Add("Ping request from " + p.IP + " size = " + p.size);
+                    listLineReflector[p.lineIndex].Stroke = Brushes.Orange;
+                    listLineReflector[p.lineIndex].BeginAnimation(Line.OpacityProperty, fade);
+                }
+                if (queuePing.Count > 64)
+                {
+                    //DOWN
+                    //timerPing.Stop();
+                    timer.Stop();
+                    imageTarget.Source = serverX;
                 }
             };
-            timer.Start();
 
-            //DDos = new Storyboard();
-            //DoubleAnimation x = new DoubleAnimation()
-            //{
-            //    From = 1.0,
-            //    To = 5.0,
-            //    Duration = new Duration(TimeSpan.FromSeconds(3)),
-            //    AutoReverse = true,
-            //    RepeatBehavior = RepeatBehavior.Forever
-            //};
-            //(_canvas.Children[5] as Line).BeginAnimation(Line.StrokeThicknessProperty, x);
+            timerPing.Start();
+            timer.Start();
         }
 
         private double getHeight()
@@ -166,6 +193,8 @@ namespace ModelDanSimulasi
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     Content = _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255)
                 });
+                ip = getRandomIP();
+                ipReflector.Add(ip);
                 _canvas.Children.Add(new Image
                 {
                     Name = ("reflectorComputer" + (2 * i)),
@@ -174,6 +203,8 @@ namespace ModelDanSimulasi
                     Height = REFLECTOR_HEIGHT,
                     Margin = new Thickness(X_REFLECTOR, zombiePosition + reflector1, 0, 0)
                 });
+                ip = getRandomIP();
+                ipReflector.Add(ip);
                 _canvas.Children.Add(new Image
                 {
                     Name = ("reflectorComputer" + (2 * i + 1)),
@@ -203,7 +234,7 @@ namespace ModelDanSimulasi
                     X2 = X_REFLECTOR - 10,
                     Y2 = zombiePosition + reflector1 + REFLECTOR_HEIGHT / 2,
                     Stroke = Brushes.Green,
-                    StrokeThickness = 1
+                    StrokeThickness = 2
                 };
                 _canvas.Children.Add(line);
 
@@ -251,14 +282,15 @@ namespace ModelDanSimulasi
 
         public void addTarget(bool statusOK)
         {
-            targetIndex = _canvas.Children.Add(new Image
+            imageTarget = new Image
             {
                 Name = "target",
                 Source = statusOK ? serverOK : serverX,
                 Width = PICTURE_WIDTH,
                 Height = PICTURE_HEIGHT,
                 Margin = new Thickness(X_TARGET, (getHeight() - PICTURE_HEIGHT - LABEL_HEIGHT) / 2, 0, 0)
-            });
+            };
+            _canvas.Children.Add(imageTarget);
             _canvas.Children.Add(new Label
             {
                 Name = "labelTarget",
