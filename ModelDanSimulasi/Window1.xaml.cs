@@ -70,10 +70,19 @@ namespace ModelDanSimulasi
                 Name = "listPing",
                 Margin = new Thickness(X_TARGET + 100, 25, 0, 0),
                 Height = getHeight() - 50,
-                Width = this.Width - 38 - X_TARGET - 150,
-                IsSynchronizedWithCurrentItem = true
+                Width = this.Width - 38 - X_TARGET - 150
             };
             _canvas.Children.Add(listPing);
+
+            TextBox infoServer = new TextBox
+            {
+                Name = "infoRAM",
+                Margin = new Thickness(X_TARGET + 100, 5, 0, 0),
+                Height = 20,
+                Width = this.Width - 38 - X_TARGET - 150,
+                IsReadOnly = true
+            };
+            _canvas.Children.Add(infoServer);
 
             DoubleAnimation fade = new DoubleAnimation
             {
@@ -113,6 +122,7 @@ namespace ModelDanSimulasi
                     listLineReflector[p.lineIndex].Stroke = Brushes.Orange;
                     listLineReflector[p.lineIndex].BeginAnimation(Line.OpacityProperty, fade);
                 }
+                infoServer.Text = "RAM = " + queuePing.Count * 16 + "kB / 1MB";
                 if (queuePing.Count > 64)
                 {
                     //DOWN
