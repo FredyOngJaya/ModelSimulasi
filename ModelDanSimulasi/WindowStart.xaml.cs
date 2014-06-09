@@ -30,6 +30,8 @@ namespace ModelDanSimulasi
 
             buttonMITMA.Click += (s, e) =>
             {
+                Window mitma = new WindowMITMA();
+                mitma.ShowDialog();
             };
         }
     }

@@ -37,6 +37,8 @@ namespace ModelDanSimulasi
         private Random _random;
         private Image imageTarget;
         private ListBox listBoxPing;
+        private TextBox textBoxNZombie;
+        private TextBox textBoxRAM;
         private TextBox textBoxInfoServer;
         private Slider sliderSpeed;
         private Button buttonSimulate;
@@ -72,7 +74,7 @@ namespace ModelDanSimulasi
             _canvas.Children.Add(textBoxInfoServer = new TextBox
             {
                 Name = "infoRAM",
-                Margin = new Thickness(X_ETC, 5, 0, 0),
+                Margin = new Thickness(X_ETC + 205, 5, 0, 0),
                 Height = 20,
                 Width = 300,
                 IsReadOnly = true
@@ -81,23 +83,67 @@ namespace ModelDanSimulasi
             _canvas.Children.Add(listBoxPing = new ListBox
             {
                 Name = "listPing",
-                Margin = new Thickness(X_ETC, 30, 0, 0),
-                Height = getHeight() - 60,
+                Margin = new Thickness(X_ETC + 205, 30, 0, 0),
+                Height = getHeight() - 30,
                 Width = 300
             });
 
+            // Slider
+            Label speed;
+            _canvas.Children.Add(speed = new Label
+            {
+                Content = "Speed (500ms)",
+                Margin = new Thickness(X_ETC, 5, 0, 0)
+            });
             _canvas.Children.Add(sliderSpeed = new Slider
             {
                 Name = "sliderSpeed",
                 Orientation = Orientation.Horizontal,
-                Margin = new Thickness(X_ETC + 305, 5, 0, 0),
+                Margin = new Thickness(X_ETC, 30, 0, 0),
                 Width = 200,
                 BorderBrush = Brushes.Black,
                 BorderThickness = new Thickness(0.5),
                 Maximum = 2000,
                 Minimum = 50,
                 Value = 500,
-                SmallChange = 10
+                SmallChange = 10,
+                LargeChange = 10
+            });
+            _canvas.Children.Add(new Label
+            {
+                Content = "Faster",
+                Margin = new Thickness(X_ETC, 50, 0, 0)
+            });
+            _canvas.Children.Add(new Label
+            {
+                Content = "Slower",
+                Margin = new Thickness(X_ETC + 155, 50, 0, 0)
+            });
+
+            // N Zombie
+            _canvas.Children.Add(new Label
+            {
+                Content = "N Zombie",
+                Margin = new Thickness(X_ETC, 75, 0, 0)
+            });
+            _canvas.Children.Add(textBoxNZombie = new TextBox
+            {
+                Name = "textBoxNZombie",
+                Margin = new Thickness(X_ETC + 100, 75, 0, 0),
+                Width = 100
+            });
+
+            // Server RAM
+            _canvas.Children.Add(new Label
+            {
+                Content = "Target RAM(MB)",
+                Margin = new Thickness(X_ETC, 100, 0, 0)
+            });
+            _canvas.Children.Add(textBoxRAM = new TextBox
+            {
+                Name = "textBoxRAM",
+                Margin = new Thickness(X_ETC + 100, 100, 0, 0),
+                Width = 100
             });
 
             fadeOut = new DoubleAnimation
@@ -151,6 +197,7 @@ namespace ModelDanSimulasi
 
             sliderSpeed.ValueChanged += (s, e) =>
             {
+                speed.Content = "Speed (" + sliderSpeed.Value + "ms)";
                 timerPing.Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value);
                 timer.Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value);
                 fadeOut.Duration = TimeSpan.FromMilliseconds(sliderSpeed.Value + 100);
@@ -160,7 +207,7 @@ namespace ModelDanSimulasi
             {
                 Name = "buttonSimulate",
                 Content = "DDos",
-                Margin = new Thickness(20, 20, 20, 20)
+                Margin = new Thickness(X_ETC, 200, 20, 20)
             });
 
             countBasic++;
@@ -181,11 +228,26 @@ namespace ModelDanSimulasi
             listBoxPing.Items.Clear();
             textBoxInfoServer.Clear();
 
-            addZombie(6);
-            addHacker();
-            addTarget(true);
-            timerPing.Start();
-            timer.Start();
+            int nZombie;
+
+            if (int.TryParse(textBoxNZombie.Text, out nZombie) && nZombie < 9 && nZombie > 4)
+            {
+                addZombie(nZombie);
+                addHacker();
+                addTarget(true);
+                timerPing.Start();
+                timer.Start();
+            }
+            else
+            {
+                _canvas.Children.Add(new Label
+                {
+                    Content = "Jumlah komputer zombie antara 5 - 8",
+                    Margin = new Thickness(20, 20, 20, 20),
+                    FontSize = 16,
+                    Foreground = Brushes.Red
+                });
+            }
         }
 
         private double getHeight()
@@ -216,7 +278,7 @@ namespace ModelDanSimulasi
                 Width = PICTURE_WIDTH * 2,
                 Margin = new Thickness(X_HACKER - (PICTURE_WIDTH / 2), (getHeight() + PICTURE_HEIGHT) / 2, 0, 0),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
-                Content = _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255)
+                Content = getRandomIP()
             });
         }
 
@@ -253,7 +315,7 @@ namespace ModelDanSimulasi
                     Width = PICTURE_WIDTH * 2,
                     Margin = new Thickness(X_ZOMBIE - (PICTURE_WIDTH / 2), (PICTURE_HEIGHT + LABEL_HEIGHT + sisa) * (i + 1) - LABEL_HEIGHT, 0, 0),
                     HorizontalContentAlignment = HorizontalAlignment.Center,
-                    Content = _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255)
+                    Content = getRandomIP()
                 });
                 ip = getRandomIP();
                 listIpReflector.Add(ip);
@@ -358,7 +420,7 @@ namespace ModelDanSimulasi
                 Width = PICTURE_WIDTH * 2,
                 Margin = new Thickness(X_TARGET - (PICTURE_WIDTH / 2), (getHeight() + PICTURE_HEIGHT) / 2, 0, 0),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
-                Content = _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255) + "." + _random.Next(0, 255)
+                Content = getRandomIP()
             });
         }
     }
