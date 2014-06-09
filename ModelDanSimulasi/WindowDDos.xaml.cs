@@ -89,9 +89,9 @@ namespace ModelDanSimulasi
             _canvas.Children.Add(sliderSpeed = new Slider
             {
                 Name = "sliderSpeed",
-                Orientation = Orientation.Vertical,
-                Margin = new Thickness(this.Width - 38 - 20, 10, 0, 0),
-                Height = 200,
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(X_ETC + 305, 5, 0, 0),
+                Width = 200,
                 BorderBrush = Brushes.Black,
                 BorderThickness = new Thickness(0.5),
                 Maximum = 2000,
@@ -112,22 +112,23 @@ namespace ModelDanSimulasi
             {
                 Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value)
             };
+
+            timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value)
+            };
+
             timerPing.Tick += (s, e) =>
             {
                 int idx, n = _random.Next(2, listLineReflector.Count);
                 for (int i = 0; i < n; i++)
                 {
                     idx = _random.Next(listIpReflector.Count);
-                    //listLineReflector[idx].Stroke = Brushes.Green;
                     listLineReflector[idx].BeginAnimation(Line.OpacityProperty, fadeOut);
                     queuePing.Enqueue(new PingRequest { IP = listIpReflector[idx], lineIndex = idx, size = 64 });
                 }
             };
 
-            timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value)
-            };
             timer.Tick += (s, e) =>
             {
                 int n = 4;
@@ -136,7 +137,6 @@ namespace ModelDanSimulasi
                 {
                     PingRequest p = queuePing.Dequeue();
                     listBoxPing.Items.Add("Ping request from " + p.IP + " size = " + p.size);
-                    //listLineReflector[p.lineIndex].Stroke = Brushes.Orange;
                     listLineReflector[p.lineIndex].BeginAnimation(Line.OpacityProperty, fadeOut);
                 }
                 textBoxInfoServer.Text = "RAM = " + queuePing.Count * 16 + "kB / 1MB";

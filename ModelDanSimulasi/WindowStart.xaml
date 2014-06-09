@@ -1,0 +1,12 @@
+﻿<Window x:Class="ModelDanSimulasi.WindowStart"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="WindowStart" Height="237" Width="200">
+    <Grid>
+        <Button Height="23" Margin="12,12,12,0" Name="buttonDDos" VerticalAlignment="Top">DDos</Button>
+        <Button Height="23" Margin="12,41,12,0" Name="buttonMITMA" VerticalAlignment="Top">Man in the middle attack</Button>
+        <Label Height="28" HorizontalContentAlignment="Center" Margin="12,0,12,80" Name="label1" VerticalAlignment="Bottom" VerticalContentAlignment="Center">Herry Gozali(11.111.0033)</Label>
+        <Label Height="28" HorizontalContentAlignment="Center" Margin="12,0,12,46" Name="label2" VerticalAlignment="Bottom" VerticalContentAlignment="Center">Tommy (11.111.0092)</Label>
+        <Label Height="28" HorizontalContentAlignment="Center" Margin="12,0,12,12" Name="label3" VerticalAlignment="Bottom" VerticalContentAlignment="Center">Fredy Ong Jaya(11.111.3188)</Label>
+    </Grid>
+</Window>
