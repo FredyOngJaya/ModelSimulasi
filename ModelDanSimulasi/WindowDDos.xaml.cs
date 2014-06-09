@@ -52,6 +52,8 @@ namespace ModelDanSimulasi
         private Queue<PingRequest> queuePing = new Queue<PingRequest>();
 
         private int countBasic;
+        private int queuePingSize;
+        private int ramSize;
 
         struct PingRequest
         {
@@ -167,26 +169,30 @@ namespace ModelDanSimulasi
             timerPing.Tick += (s, e) =>
             {
                 int idx, n = _random.Next(2, listLineReflector.Count);
+                int packetSize;
                 for (int i = 0; i < n; i++)
                 {
                     idx = _random.Next(listIpReflector.Count);
+                    packetSize = 1 << _random.Next(5, 11);
+                    queuePingSize += packetSize;
                     listLineReflector[idx].BeginAnimation(Line.OpacityProperty, fadeOut);
-                    queuePing.Enqueue(new PingRequest { IP = listIpReflector[idx], lineIndex = idx, size = 64 });
+                    queuePing.Enqueue(new PingRequest { IP = listIpReflector[idx], lineIndex = idx, size = packetSize });
                 }
             };
 
             timer.Tick += (s, e) =>
             {
                 int n = 4;
-                listBoxPing.Items.Add("Ping proses " + Math.Min(n, queuePing.Count) + " / " + queuePing.Count);
+                //listBoxPing.Items.Add("Request proses " + Math.Min(n, queuePing.Count) + " / " + queuePing.Count);
                 while (n-- > 0 && queuePing.Count > 0)
                 {
                     PingRequest p = queuePing.Dequeue();
-                    listBoxPing.Items.Add("Ping request from " + p.IP + " size = " + p.size);
+                    queuePingSize -= p.size;
+                    listBoxPing.Items.Add("Request from " + p.IP + " size = " + p.size);
                     listLineReflector[p.lineIndex].BeginAnimation(Line.OpacityProperty, fadeOut);
                 }
-                textBoxInfoServer.Text = "RAM = " + queuePing.Count * 16 + "kB / 1MB";
-                if (queuePing.Count > 64)
+                textBoxInfoServer.Text = "RAM = " + queuePingSize + "kB / " + ramSize + "kB";
+                if (queuePingSize > ramSize)
                 {
                     //DOWN
                     timerPing.Stop();
@@ -229,20 +235,36 @@ namespace ModelDanSimulasi
             textBoxInfoServer.Clear();
 
             int nZombie;
+            queuePingSize = 0;
 
-            if (int.TryParse(textBoxNZombie.Text, out nZombie) && nZombie < 9 && nZombie > 4)
+            try
             {
-                addZombie(nZombie);
-                addHacker();
-                addTarget(true);
-                timerPing.Start();
-                timer.Start();
+                if (int.TryParse(textBoxNZombie.Text, out nZombie) && nZombie < 9 && nZombie > 4)
+                {
+                    if (int.TryParse(textBoxRAM.Text, out ramSize))
+                    {
+                        ramSize *= 1024;
+                        addZombie(nZombie);
+                        addHacker();
+                        addTarget(true);
+                        timerPing.Start();
+                        timer.Start();
+                    }
+                    else
+                    {
+                        throw new Exception("Cek ukuran RAM");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Jumlah komputer zombie antara 5 - 8");
+                }
             }
-            else
+            catch (Exception e)
             {
                 _canvas.Children.Add(new Label
                 {
-                    Content = "Jumlah komputer zombie antara 5 - 8",
+                    Content = e.Message,
                     Margin = new Thickness(20, 20, 20, 20),
                     FontSize = 16,
                     Foreground = Brushes.Red

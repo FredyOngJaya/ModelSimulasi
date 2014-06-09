@@ -74,6 +74,25 @@ namespace ModelDanSimulasi
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Content = "Hacker"
             });
+
+            _canvas.Children.Add(new Line
+            {
+                X1 = getWidth() / 2,
+                Y1 = getHeight() / 10 + PICTURE_HEIGHT + 30,
+                X2 = getWidth() / 2,
+                Y2 = getHeight() / 2,
+                Stroke = Brushes.Red,
+                StrokeThickness = 2
+            });
+            _canvas.Children.Add(new Line
+            {
+                X1 = 25 + PICTURE_WIDTH + 10,
+                Y1 = getHeight() / 2,
+                X2 = getWidth() - PICTURE_WIDTH - 25 - 10,
+                Y2 = getHeight() / 2,
+                Stroke = Brushes.Green,
+                StrokeThickness = 2
+            });
         }
 
         private double getHeight()
