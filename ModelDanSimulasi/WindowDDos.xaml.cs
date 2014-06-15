@@ -244,6 +244,7 @@ namespace ModelDanSimulasi
                     if (int.TryParse(textBoxRAM.Text, out ramSize))
                     {
                         ramSize *= 1024;
+                        this.Height = 630;
                         addZombie(nZombie);
                         addHacker();
                         addTarget(true);

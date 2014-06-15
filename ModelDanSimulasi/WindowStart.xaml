@@ -1,7 +1,7 @@
 ﻿<Window x:Class="ModelDanSimulasi.WindowStart"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="WindowStart" Height="238" Width="200">
+    Title="WindowStart" Height="238" Width="222">
     <Grid>
         <Button Height="23" Margin="12,12,12,0" Name="buttonDDos" VerticalAlignment="Top">DDos</Button>
         <Button Height="23" Margin="12,41,12,0" Name="buttonMITMA" VerticalAlignment="Top">Man in the middle attack</Button>

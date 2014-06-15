@@ -165,48 +165,46 @@ namespace ModelDanSimulasi
 
         IEnumerable<Action<Action>> AnimationSequence()
         {
-            for (; ; )
+            yield return message("Koneksi Alice ke Bob");
+            yield return ShowOut(lineConnect);
+            yield return message("Intercepted by Hacker");
+            yield return ShowOut(lineHacker);
+            yield return message("Koneksi menjadi Alice - Hacker dan Hacker - Bob");
+            yield return ShowOut(lineAHacker);
+            yield return ShowOut(lineBHacker);
+            yield return hideLine(lineHacker);
+            yield return hideLine(lineConnect);
+            yield return message("Alice \"Hi Bob, it's Alice. Give me your key\"--> Mallory");
+            yield return hideLine(lineAHacker);
+            yield return ShowOut(lineAHacker);
+            yield return message("Mallory \"Hi Bob, it's Alice. Give me your key\"--> Bob");
+            yield return hideLine(lineBHacker);
+            yield return ShowOut(lineBHacker);
+            yield return message("Mallory <--[Bob's_key] Bob");
+            yield return hideLine(lineBHacker);
+            yield return ShowOut(lineBHacker);
+            yield return message("Alice <--[Fake Bob's_key] Mallory");
+            yield return hideLine(lineAHacker);
+            yield return ShowOut(lineAHacker);
+
+            for (int i = 0; i < 5; i++)
             {
-                yield return message("Koneksi Alice ke Bob");
-                yield return ShowOut(lineConnect);
-                yield return message("Intercepted by Hacker");
-                yield return ShowOut(lineHacker);
-                yield return message("Koneksi menjadi Alice - Hacker dan Hacker - Bob");
+                // tambah pesan random atao gimana gitu
+                StringBuilder mess = new StringBuilder();
+                yield return message(mess.ToString());
+                yield return hideLine(lineAHacker);
                 yield return ShowOut(lineAHacker);
+                yield return hideLine(lineBHacker);
                 yield return ShowOut(lineBHacker);
-                yield return fadeInstant(lineHacker);
-                yield return fadeInstant(lineConnect);
-                yield return message("Alice \"Hi Bob, it's Alice. Give me your key\"--> Mallory");
-                yield return fadeInstant(lineAHacker);
+                yield return message(mess.ToString());
+                yield return hideLine(lineBHacker);
+                yield return ShowOut(lineBHacker);
+                yield return hideLine(lineAHacker);
                 yield return ShowOut(lineAHacker);
-                yield return message("Mallory \"Hi Bob, it's Alice. Give me your key\"--> Bob");
-                yield return fadeInstant(lineBHacker);
-                yield return ShowOut(lineBHacker);
-                yield return message("Mallory <--[Bob's_key] Bob");
-                yield return fadeInstant(lineBHacker);
-                yield return ShowOut(lineBHacker);
-                yield return message("Alice <--[Fake Bob's_key] Mallory");
-                yield return fadeInstant(lineAHacker);
-                yield return ShowOut(lineAHacker);
-
-                for (int i = 0; i < 5; i++)
-                {
-                    StringBuilder mess = new StringBuilder();
-                    yield return message(mess.ToString());
-                    yield return fadeInstant(lineAHacker);
-                    yield return ShowOut(lineAHacker);
-                    yield return fadeInstant(lineBHacker);
-                    yield return ShowOut(lineBHacker);
-                    yield return message(mess.ToString());
-                    yield return fadeInstant(lineBHacker);
-                    yield return ShowOut(lineBHacker);
-                    yield return fadeInstant(lineAHacker);
-                    yield return ShowOut(lineAHacker);
-                }
-
-                yield return fadeInstant(lineAHacker);
-                yield return fadeInstant(lineBHacker);
             }
+
+            yield return hideLine(lineAHacker);
+            yield return hideLine(lineBHacker);
         }
 
         private IEnumerator<Action<Action>> _actions;
@@ -217,12 +215,6 @@ namespace ModelDanSimulasi
                 _actions.Current(RunNextAction);
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            _actions = AnimationSequence().GetEnumerator();
-            RunNextAction();
-        }
-
         private Action<Action> ShowOut(Line line)
         {
             return completed =>
@@ -231,7 +223,6 @@ namespace ModelDanSimulasi
                 {
                     From = 0.0,
                     To = 1.0,
-                    //Duration = TimeSpan.FromSeconds(2),
                     Duration = TimeSpan.FromSeconds(2),
                     BeginTime = TimeSpan.FromSeconds(1)
                 };
@@ -240,7 +231,7 @@ namespace ModelDanSimulasi
             };
         }
 
-        private Action<Action> fadeInstant(Line line)
+        private Action<Action> hideLine(Line line)
         {
             return completed =>
             {
