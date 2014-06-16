@@ -9,63 +9,46 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 namespace ModelDanSimulasi
 {
     /// <summary>
-    /// Interaction logic for Window1.xaml
+    /// Interaction logic for WindowMailBomb.xaml
     /// </summary>
-    public partial class WindowDDos : Window
+    public partial class WindowMailBomb : Window
     {
         const double PICTURE_WIDTH = 64;
         const double PICTURE_HEIGHT = 64;
         const double LABEL_HEIGHT = 26;
-        const double REFLECTOR_WIDTH = 30;
-        const double REFLECTOR_HEIGHT = 30;
 
         const double X_HACKER = 15;
         const double X_ZOMBIE = 150;
-        const double X_REFLECTOR = 300;
         const double X_TARGET = 500;
         const double X_ETC = 600;
 
-        private BitmapImage hacker, computer, serverOK, serverX;
+        private BitmapImage hacker, computer, serverOK, serverX, email;
         private Random _random;
         private Image imageTarget;
         private Label labelTarget;
-        private ListBox listBoxPing;
-        private ListBox listBoxRequestSent;
+        private ListBox listBoxMail;
         private TextBox textBoxNZombie;
-        private TextBox textBoxRAM;
+        private TextBox textBoxDiskSize;
         private TextBox textBoxInfoServer;
         private Slider sliderSpeed;
         private Button buttonSimulate;
 
-        private DoubleAnimation fadeOut;
-        private DispatcherTimer timerPing;
-        private DispatcherTimer timer;
+        private DispatcherTimer timerBomb;
 
-        private List<string> listIpReflector = new List<string>();
-        private List<Line> listLineReflector = new List<Line>();
-        private Queue<PingRequest> queuePing = new Queue<PingRequest>();
+        private List<string> listIpZombie = new List<string>();
+        private List<double> listYZombie = new List<double>();
 
         private int countBasic;
-        private int queuePingSize;
-        private int ramSize;
-        private int idxListRequest;
+        private int usedSize;
+        private int diskSize;
 
-        struct PingRequest
-        {
-            public string IP;
-            public int lineIndex;
-            public int size;
-        }
-
-        public WindowDDos()
+        public WindowMailBomb()
         {
             InitializeComponent();
 
@@ -73,31 +56,24 @@ namespace ModelDanSimulasi
             computer = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/computer.png", UriKind.Relative));
             serverOK = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/computer_ok.png", UriKind.Relative));
             serverX = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/computer_x.png", UriKind.Relative));
+            email = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/mail_cancel.png", UriKind.Relative));
 
             _random = new Random(17 * DateTime.Now.Millisecond);
 
             _canvas.Children.Add(textBoxInfoServer = new TextBox
             {
                 Name = "infoRAM",
-                Margin = new Thickness(X_ETC + 205, 5, 0, 0),
+                Margin = new Thickness(X_ETC, 155, 0, 0),
                 Height = 20,
-                Width = 300,
+                Width = 325,
                 IsReadOnly = true
             });
 
-            _canvas.Children.Add(listBoxPing = new ListBox
-            {
-                Name = "listPing",
-                Margin = new Thickness(X_ETC + 205, 30, 0, 0),
-                Height = getHeight() - 30,
-                Width = 300
-            });
-
-            _canvas.Children.Add(listBoxRequestSent = new ListBox
+            _canvas.Children.Add(listBoxMail = new ListBox
             {
                 Margin = new Thickness(X_ETC, 180, 20, 20),
                 Height = getHeight() - 180,
-                Width = 200
+                Width = 325
             });
 
             // Slider
@@ -148,69 +124,69 @@ namespace ModelDanSimulasi
             // Server RAM
             _canvas.Children.Add(new Label
             {
-                Content = "Target RAM(MB)",
+                Content = "Disk Size(MB)",
                 Margin = new Thickness(X_ETC, 100, 0, 0)
             });
-            _canvas.Children.Add(textBoxRAM = new TextBox
+            _canvas.Children.Add(textBoxDiskSize = new TextBox
             {
-                Name = "textBoxRAM",
+                Name = "textBoxDiskSize",
                 Margin = new Thickness(X_ETC + 100, 100, 0, 0),
                 Width = 100
             });
 
-            fadeOut = new DoubleAnimation
-            {
-                Name = "fadeOut",
-                From = 1.0,
-                To = 0.0,
-                Duration = new Duration(TimeSpan.FromMilliseconds(sliderSpeed.Value + 100))
-            };
-
-            timerPing = new DispatcherTimer
+            timerBomb = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value)
             };
 
-            timer = new DispatcherTimer
+            timerBomb.Tick += (s, e) =>
             {
-                Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value)
-            };
-
-            timerPing.Tick += (s, e) =>
-            {
-                int idx, n = _random.Next(2, listLineReflector.Count);
-                int packetSize;
+                int idx, n = _random.Next(2, listIpZombie.Count);
+                int mailSize;
                 for (int i = 0; i < n; i++)
                 {
-                    idx = _random.Next(listIpReflector.Count);
-                    packetSize = 1 << _random.Next(5, 11);
-                    queuePingSize += packetSize;
-                    listLineReflector[idx].BeginAnimation(Line.OpacityProperty, fadeOut);
-                    listBoxRequestSent.Items.Add(new ListBoxItem
+                    idx = _random.Next(listIpZombie.Count);
+                    mailSize = 1 << _random.Next(5, 11);
+                    usedSize += mailSize;
+                    listBoxMail.Items.Add("Mail from " + listIpZombie[idx] + ", size = " + mailSize + "kB");
+                    Image mail = new Image
                     {
-                        Content = listIpReflector[idx] + " send request, size = " + packetSize
-                    });
-                    queuePing.Enqueue(new PingRequest { IP = listIpReflector[idx], lineIndex = idx, size = packetSize });
+                        Source = email,
+                        Width = 24,
+                        Height = 24,
+                        Margin = new Thickness(0, 0, 0, 0)
+                    };
+                    _canvas.Children.Add(mail);
+                    double xNow = X_ZOMBIE + PICTURE_WIDTH + 10, yNow = listYZombie[idx];
+                    Canvas.SetLeft(mail, xNow);
+                    Canvas.SetTop(mail, yNow);
+                    double duration = sliderSpeed.Value;
+                    double xDiff = (X_TARGET - xNow - 30) * 16 / duration;
+                    double yDiff = (getHeight() / 2 - yNow - 20) * 16 / duration;
+                    double t = 0;
+                    DispatcherTimer timerMail = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(16)
+                    };
+                    timerMail.Tick += (sender, ev) =>
+                    {
+                        t += 16;
+                        xNow += xDiff;
+                        yNow += yDiff;
+                        Canvas.SetLeft(mail, xNow);
+                        Canvas.SetTop(mail, yNow);
+                        if (t >= duration)
+                        {
+                            mail.Visibility = Visibility.Hidden;
+                            timerMail.Stop();
+                        }
+                    };
+                    timerMail.Start();
                 }
-            };
-
-            timer.Tick += (s, e) =>
-            {
-                int n = _random.Next(4, 7);
-                while (n-- > 0 && queuePing.Count > 0)
+                textBoxInfoServer.Text = "Disk = " + usedSize + "kB / " + diskSize + "kB (" + Math.Round(((double)usedSize * 100 / diskSize), 2) + " %)";
+                if (usedSize >= diskSize)
                 {
-                    PingRequest p = queuePing.Dequeue();
-                    queuePingSize -= p.size;
-                    (listBoxRequestSent.Items[idxListRequest++] as ListBoxItem).Background = Brushes.Green;
-                    listBoxPing.Items.Add("Request from " + p.IP + " size = " + p.size);
-                    listLineReflector[p.lineIndex].BeginAnimation(Line.OpacityProperty, fadeOut);
-                }
-                textBoxInfoServer.Text = "RAM = " + queuePingSize + "kB / " + ramSize + "kB (" + Math.Round(((double)queuePingSize * 100 / ramSize), 2) + " %)";
-                if (queuePingSize > ramSize)
-                {
-                    //DOWN
-                    timerPing.Stop();
-                    timer.Stop();
+                    timerBomb.Stop();
                     imageTarget.Source = serverX;
                     labelTarget.Background = Brushes.Red;
                     buttonSimulate.IsEnabled = true;
@@ -220,16 +196,14 @@ namespace ModelDanSimulasi
             sliderSpeed.ValueChanged += (s, e) =>
             {
                 speed.Content = "Speed (" + sliderSpeed.Value + "ms)";
-                timerPing.Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value);
-                timer.Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value);
-                fadeOut.Duration = TimeSpan.FromMilliseconds(sliderSpeed.Value + 100);
+                timerBomb.Interval = TimeSpan.FromMilliseconds(sliderSpeed.Value);
             };
 
             countBasic = _canvas.Children.Add(buttonSimulate = new Button
             {
                 Name = "buttonSimulate",
                 Content = "DDos",
-                Margin = new Thickness(X_ETC, 150, 20, 20)
+                Margin = new Thickness(X_ETC, 125, 20, 20)
             });
 
             countBasic++;
@@ -243,38 +217,30 @@ namespace ModelDanSimulasi
             {
                 _canvas.Children.RemoveRange(countBasic, _canvas.Children.Count - countBasic);
             }
-            queuePing.Clear();
-            listIpReflector.Clear();
-            listLineReflector.Clear();
 
-            listBoxPing.Items.Clear();
-            listBoxRequestSent.Items.Clear();
             textBoxInfoServer.Clear();
 
             int nZombie;
-            queuePingSize = 0;
-            idxListRequest = 0;
 
             try
             {
                 if (int.TryParse(textBoxNZombie.Text, out nZombie) && nZombie < 9 && nZombie > 4)
                 {
-                    if (int.TryParse(textBoxRAM.Text, out ramSize))
+                    if (int.TryParse(textBoxDiskSize.Text, out diskSize))
                     {
-                        queuePingSize += _random.Next(ramSize * 128, ramSize * 256) / 1024;
-                        ramSize *= 1024;
+                        usedSize += _random.Next(diskSize * 1024, diskSize * 2048) / 1024;
+                        diskSize *= 1024;
                         this.Height = 630;
-                        textBoxInfoServer.Text = "RAM = " + queuePingSize + "kB / " + ramSize + "kB (" + Math.Round(((double)queuePingSize * 100 / ramSize), 2) + " %)";
+                        textBoxInfoServer.Text = "Disk = " + usedSize + "kB / " + diskSize + "kB (" + Math.Round(((double)usedSize * 100 / diskSize), 2) + " %)";
                         addZombie(nZombie);
                         addHacker();
                         addTarget(true);
                         buttonSimulate.IsEnabled = false;
-                        timerPing.Start();
-                        timer.Start();
+                        timerBomb.Start();
                     }
                     else
                     {
-                        throw new Exception("Cek ukuran RAM");
+                        throw new Exception("Cek ukuran Disk");
                     }
                 }
                 else
@@ -338,14 +304,15 @@ namespace ModelDanSimulasi
             }
             double hackerPosition = tinggi / 2;
             double sisa = (tinggi - total) / (n + 1);
-            double reflector1 = ((PICTURE_HEIGHT + LABEL_HEIGHT) - (REFLECTOR_HEIGHT * 2)) / 3;
-            double reflector2 = reflector1 * 2 + REFLECTOR_HEIGHT;
             double zombiePosition;
             string ip;
             Line line;
             for (int i = 0; i < n; i++)
             {
                 zombiePosition = (PICTURE_HEIGHT + LABEL_HEIGHT + sisa) * i + sisa;
+                ip = getRandomIP();
+                listIpZombie.Add(ip);
+                listYZombie.Add(zombiePosition + 10);
                 _canvas.Children.Add(new Image
                 {
                     Name = ("zombieComputer" + i),
@@ -360,27 +327,7 @@ namespace ModelDanSimulasi
                     Width = PICTURE_WIDTH * 2,
                     Margin = new Thickness(X_ZOMBIE - (PICTURE_WIDTH / 2), (PICTURE_HEIGHT + LABEL_HEIGHT + sisa) * (i + 1) - LABEL_HEIGHT, 0, 0),
                     HorizontalContentAlignment = HorizontalAlignment.Center,
-                    Content = getRandomIP()
-                });
-                ip = getRandomIP();
-                listIpReflector.Add(ip);
-                _canvas.Children.Add(new Image
-                {
-                    Name = ("reflectorComputer" + (2 * i)),
-                    Source = computer,
-                    Width = REFLECTOR_WIDTH,
-                    Height = REFLECTOR_HEIGHT,
-                    Margin = new Thickness(X_REFLECTOR, zombiePosition + reflector1, 0, 0)
-                });
-                ip = getRandomIP();
-                listIpReflector.Add(ip);
-                _canvas.Children.Add(new Image
-                {
-                    Name = ("reflectorComputer" + (2 * i + 1)),
-                    Source = computer,
-                    Width = REFLECTOR_WIDTH,
-                    Height = REFLECTOR_HEIGHT,
-                    Margin = new Thickness(X_REFLECTOR, zombiePosition + reflector2, 0, 0)
+                    Content = ip
                 });
 
                 line = new Line
@@ -394,58 +341,6 @@ namespace ModelDanSimulasi
                     StrokeThickness = 2
                 };
                 _canvas.Children.Add(line);
-
-                line = new Line
-                {
-                    Name = ("lineZombieReflector" + (2 * i)),
-                    X1 = X_ZOMBIE + PICTURE_WIDTH + 10,
-                    Y1 = zombiePosition + PICTURE_HEIGHT / 2,
-                    X2 = X_REFLECTOR - 10,
-                    Y2 = zombiePosition + reflector1 + REFLECTOR_HEIGHT / 2,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 2
-                };
-                _canvas.Children.Add(line);
-
-                line = new Line
-                {
-                    Name = ("lineZombieReflector" + (2 * i + 1)),
-                    X1 = X_ZOMBIE + PICTURE_WIDTH + 10,
-                    Y1 = zombiePosition + PICTURE_HEIGHT / 2,
-                    X2 = X_REFLECTOR - 10,
-                    Y2 = zombiePosition + reflector2 + REFLECTOR_HEIGHT / 2,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 2
-                };
-                _canvas.Children.Add(line);
-
-                line = new Line
-                {
-                    Name = ("lineReflectorTarget" + (2 * i)),
-                    X1 = X_REFLECTOR + REFLECTOR_WIDTH + 10,
-                    Y1 = zombiePosition + reflector1 + REFLECTOR_HEIGHT / 2,
-                    X2 = X_TARGET - 10,
-                    Y2 = hackerPosition,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 2,
-                    Opacity = 0
-                };
-                _canvas.Children.Add(line);
-                listLineReflector.Add(line);
-
-                line = new Line
-                {
-                    Name = ("lineReflectorTarget" + (2 * i + 1)),
-                    X1 = X_REFLECTOR + REFLECTOR_WIDTH + 10,
-                    Y1 = zombiePosition + reflector2 + REFLECTOR_HEIGHT / 2,
-                    X2 = X_TARGET - 10,
-                    Y2 = hackerPosition,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 2,
-                    Opacity = 0
-                };
-                _canvas.Children.Add(line);
-                listLineReflector.Add(line);
             }
         }
 

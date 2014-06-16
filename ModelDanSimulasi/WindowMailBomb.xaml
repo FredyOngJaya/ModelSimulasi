@@ -1,0 +1,6 @@
+﻿<Window x:Class="ModelDanSimulasi.WindowMailBomb"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="WindowMailBomb" Height="540" Width="960" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" FontFamily="Arial" FontSize="12" ShowInTaskbar="False">
+    <Canvas Name="_canvas"></Canvas>
+</Window>

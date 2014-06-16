@@ -33,6 +33,12 @@ namespace ModelDanSimulasi
                 Window mitma = new WindowMITMA();
                 mitma.ShowDialog();
             };
+
+            buttonMailBomb.Click += (s, e) =>
+            {
+                Window mailBomb = new WindowMailBomb();
+                mailBomb.ShowDialog();
+            };
         }
     }
 }
