@@ -253,9 +253,8 @@ namespace ModelDanSimulasi
 
             for (int i = 0; i < 3; i++)
             {
-                // tambah pesan random atao gimana gitu
                 StringBuilder mess = new StringBuilder();
-                int n = _random.Next(20);
+                int n = _random.Next(5, 21);
                 for (int x = 0; x < n; x++)
                 {
                     int c = _random.Next(30);
@@ -279,7 +278,7 @@ namespace ModelDanSimulasi
                 yield return ShowOut(lineBHacker, 0.2, 2.5);
 
                 mess.Length = 0;
-                n = _random.Next(20);
+                n = _random.Next(5, 21);
                 for (int x = 0; x < n; x++)
                 {
                     int c = _random.Next(30);
