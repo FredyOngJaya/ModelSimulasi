@@ -9,8 +9,10 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace ModelDanSimulasi
 {
@@ -23,8 +25,8 @@ namespace ModelDanSimulasi
         const double PICTURE_HEIGHT = 64;
         const double LABEL_HEIGHT = 26;
 
-        private BitmapImage hacker, computer;
-        private Image A, B, H;
+        private BitmapImage hacker, computer, key;
+        private Image A, B, H, iKey;
 
         Line lineHacker;
         Line lineConnect;
@@ -38,6 +40,7 @@ namespace ModelDanSimulasi
 
             hacker = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/user.png", UriKind.Relative));
             computer = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/computer.png", UriKind.Relative));
+            key = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/key.png", UriKind.Relative));
 
             _canvas.Children.Add(A = new Image
             {
@@ -80,6 +83,15 @@ namespace ModelDanSimulasi
                 Margin = new Thickness(getWidth() / 2 - PICTURE_WIDTH, getHeight() / 10 + PICTURE_HEIGHT, 0, 0),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 Content = "Hacker"
+            });
+
+            _canvas.Children.Add(iKey = new Image
+            {
+                Source = key,
+                Width = 24,
+                Height = 24,
+                Margin = new Thickness(0, 0, 0, 0),
+                Visibility = Visibility.Hidden
             });
 
             _canvas.Children.Add(lineHacker = new Line
@@ -130,7 +142,7 @@ namespace ModelDanSimulasi
             {
                 Content = "",
                 FontSize = 16,
-                Margin = new Thickness(20, getHeight() / 2 + 50, 0, 0),
+                Margin = new Thickness(20, getHeight() / 2 + 70, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Stretch
             });
 
@@ -166,41 +178,76 @@ namespace ModelDanSimulasi
         IEnumerable<Action<Action>> AnimationSequence()
         {
             yield return message("Koneksi Alice ke Bob");
-            yield return ShowOut(lineConnect);
+            yield return ShowOut(lineConnect, 1, 3);
+
             yield return message("Intercepted by Hacker");
-            yield return ShowOut(lineHacker);
+            yield return ShowOut(lineHacker, 1, 2);
+
             yield return message("Koneksi menjadi Alice - Hacker dan Hacker - Bob");
-            yield return ShowOut(lineAHacker);
-            yield return ShowOut(lineBHacker);
+            yield return ShowOut(lineAHacker, 1, 3);
+            yield return ShowOut(lineBHacker, 1, 3);
             yield return hideLine(lineHacker);
             yield return hideLine(lineConnect);
+
             yield return message("Alice \"Hi Bob, it's Alice. Give me your key\"--> Mallory");
             yield return hideLine(lineAHacker);
-            yield return ShowOut(lineAHacker);
+            yield return ShowOut(lineAHacker, 1, 2);
+
             yield return message("Mallory \"Hi Bob, it's Alice. Give me your key\"--> Bob");
             yield return hideLine(lineBHacker);
-            yield return ShowOut(lineBHacker);
+            yield return ShowOut(lineBHacker, 1, 2);
+            
             yield return message("Mallory <--[Bob's_key] Bob");
             yield return hideLine(lineBHacker);
-            yield return ShowOut(lineBHacker);
+            yield return moveKey(getWidth() - (40 + PICTURE_WIDTH / 2) + 30,
+                                getHeight() / 2 - 50,
+                                (getWidth() + PICTURE_WIDTH) / 2 + 10,
+                                getHeight() / 10 + 2,
+                                1.5);
+            yield return ShowOut(lineBHacker, 0.2, 2.5);
+
             yield return message("Alice <--[Fake Bob's_key] Mallory");
             yield return hideLine(lineAHacker);
-            yield return ShowOut(lineAHacker);
+            yield return moveKey((getWidth() - PICTURE_WIDTH) / 2 - 40,
+                                getHeight() / 10 + 2,
+                                10 + PICTURE_WIDTH / 2,
+                                getHeight() / 2 - 70,
+                                1.5);
+            yield return ShowOut(lineAHacker, 0.2, 2.5);
 
-            for (int i = 0; i < 5; i++)
+            yield return message("Alice [Alice's_key]--> Mallory");
+            yield return hideLine(lineAHacker);
+            yield return moveKey(10 + PICTURE_WIDTH / 2,
+                                getHeight() / 2 - 70,
+                                (getWidth() - PICTURE_WIDTH) / 2 - 40,
+                                getHeight() / 10 + 2,
+                                1.5);
+            yield return ShowOut(lineAHacker, 0.2, 2.5);
+
+            yield return message("Mallory [Fake Alice's_key]--> Bob");
+            yield return hideLine(lineBHacker);
+            yield return moveKey((getWidth() + PICTURE_WIDTH) / 2 + 10,
+                                getHeight() / 10 + 2,
+                                getWidth() - (40 + PICTURE_WIDTH / 2) + 30,
+                                getHeight() / 2 - 50,
+                                1.5);
+            yield return ShowOut(lineBHacker, 0.2, 2.5);
+
+            for (int i = 0; i < 1; i++)
             {
                 // tambah pesan random atao gimana gitu
                 StringBuilder mess = new StringBuilder();
+                mess.Append("MESSAGE A-B-A-B-A");
                 yield return message(mess.ToString());
                 yield return hideLine(lineAHacker);
-                yield return ShowOut(lineAHacker);
+                yield return ShowOut(lineAHacker, 1, 2);
                 yield return hideLine(lineBHacker);
-                yield return ShowOut(lineBHacker);
+                yield return ShowOut(lineBHacker, 1, 2);
                 yield return message(mess.ToString());
                 yield return hideLine(lineBHacker);
-                yield return ShowOut(lineBHacker);
+                yield return ShowOut(lineBHacker, 1, 2);
                 yield return hideLine(lineAHacker);
-                yield return ShowOut(lineAHacker);
+                yield return ShowOut(lineAHacker, 1, 2);
             }
 
             yield return hideLine(lineAHacker);
@@ -215,7 +262,7 @@ namespace ModelDanSimulasi
                 _actions.Current(RunNextAction);
         }
 
-        private Action<Action> ShowOut(Line line)
+        private Action<Action> ShowOut(Line line, double delayTimeSeconds, double durationTime)
         {
             return completed =>
             {
@@ -223,8 +270,8 @@ namespace ModelDanSimulasi
                 {
                     From = 0.0,
                     To = 1.0,
-                    Duration = TimeSpan.FromSeconds(2),
-                    BeginTime = TimeSpan.FromSeconds(1)
+                    Duration = TimeSpan.FromSeconds(durationTime),
+                    BeginTime = TimeSpan.FromSeconds(delayTimeSeconds)
                 };
                 showOut.Completed += (s, e) => completed();
                 line.BeginAnimation(Line.OpacityProperty, showOut);
@@ -248,6 +295,36 @@ namespace ModelDanSimulasi
         private Action<Action> message(string pesan)
         {
             info.Content = pesan;
+            return completed => { completed(); };
+        }
+
+        private Action<Action> moveKey(double xFrom, double yFrom, double xTo, double yTo, double duration)
+        {
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16)
+            };
+            Canvas.SetLeft(iKey, xFrom);
+            Canvas.SetTop(iKey, yFrom);
+            iKey.Visibility = Visibility.Visible;
+            double xNow = xFrom, yNow = yFrom;
+            double xDiff = (xTo - xFrom) * 16 / duration / 1000;
+            double yDiff = (yTo - yFrom) * 16 / duration / 1000;
+            double t = 0;
+            timer.Tick += (s, e) =>
+            {
+                t += 16;
+                xNow += xDiff;
+                yNow += yDiff;
+                Canvas.SetLeft(iKey, xNow);
+                Canvas.SetTop(iKey, yNow);
+                if (t >= duration * 1000)
+                {
+                    iKey.Visibility = Visibility.Hidden;
+                    timer.Stop();
+                }
+            };
+            timer.Start();
             return completed => { completed(); };
         }
     }

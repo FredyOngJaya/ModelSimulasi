@@ -36,6 +36,7 @@ namespace ModelDanSimulasi
         private BitmapImage hacker, computer, serverOK, serverX;
         private Random _random;
         private Image imageTarget;
+        private Label labelTarget;
         private ListBox listBoxPing;
         private TextBox textBoxNZombie;
         private TextBox textBoxRAM;
@@ -182,7 +183,7 @@ namespace ModelDanSimulasi
 
             timer.Tick += (s, e) =>
             {
-                int n = 4;
+                int n = _random.Next(4, 7);
                 //listBoxPing.Items.Add("Request proses " + Math.Min(n, queuePing.Count) + " / " + queuePing.Count);
                 while (n-- > 0 && queuePing.Count > 0)
                 {
@@ -198,6 +199,7 @@ namespace ModelDanSimulasi
                     timerPing.Stop();
                     timer.Stop();
                     imageTarget.Source = serverX;
+                    labelTarget.Background = Brushes.Red;
                 }
             };
 
@@ -437,12 +439,14 @@ namespace ModelDanSimulasi
                 Height = PICTURE_HEIGHT,
                 Margin = new Thickness(X_TARGET, (getHeight() - PICTURE_HEIGHT - LABEL_HEIGHT) / 2, 0, 0)
             });
-            _canvas.Children.Add(new Label
+            _canvas.Children.Add(labelTarget = new Label
             {
                 Name = "labelTarget",
                 Width = PICTURE_WIDTH * 2,
                 Margin = new Thickness(X_TARGET - (PICTURE_WIDTH / 2), (getHeight() + PICTURE_HEIGHT) / 2, 0, 0),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
+                Background = Brushes.Green,
+                Foreground = Brushes.White,
                 Content = getRandomIP()
             });
         }
