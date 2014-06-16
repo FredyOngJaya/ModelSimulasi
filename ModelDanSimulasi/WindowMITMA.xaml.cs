@@ -35,6 +35,9 @@ namespace ModelDanSimulasi
         Line lineBHacker;
         Label info;
 
+        Button play;
+        Random _random;
+
         public WindowMITMA()
         {
             InitializeComponent();
@@ -43,6 +46,8 @@ namespace ModelDanSimulasi
             computer = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/computer.png", UriKind.Relative));
             key = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/key.png", UriKind.Relative));
             email = new BitmapImage(new Uri(@"/ModelDanSimulasi;component/Images/mail.png", UriKind.Relative));
+
+            _random = new Random(17 * DateTime.Now.Millisecond);
 
             _canvas.Children.Add(A = new Image
             {
@@ -161,7 +166,6 @@ namespace ModelDanSimulasi
             this.RegisterName(lineBHacker.Name, lineBHacker);
             this.RegisterName(lineConnect.Name, lineConnect);
 
-            Button play;
             _canvas.Children.Add(play = new Button
             {
                 Content = "Start",
@@ -204,6 +208,7 @@ namespace ModelDanSimulasi
 
         IEnumerable<Action<Action>> AnimationSequence()
         {
+            yield return setPlay(false);
             yield return message("Koneksi Alice ke Bob");
             yield return ShowOut(lineConnect, 1, 3);
 
@@ -246,35 +251,62 @@ namespace ModelDanSimulasi
             yield return moveKey(rightHX, rightHY, topBX, topBY, 1.5, 0.5);
             yield return ShowOut(lineBHacker, 0.2, 2.5);
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 3; i++)
             {
                 // tambah pesan random atao gimana gitu
                 StringBuilder mess = new StringBuilder();
-                mess.Append("MESSAGE A-B-A-B-A");
+                int n = _random.Next(20);
+                for (int x = 0; x < n; x++)
+                {
+                    int c = _random.Next(30);
+                    if (c >= 26)
+                    {
+                        mess.Append(" ");
+                    }
+                    else
+                    {
+                        mess.Append((char)('a' + c));
+                    }
+                }
                 yield return message("Alice : " + mess.ToString() + " --> Mallory");
                 yield return hideLine(lineAHacker);
                 yield return moveMail(topAX, topAY, leftHX, leftHY, 1.5, 1.0);
-                yield return ShowOut(lineAHacker, 1, 2);
+                yield return ShowOut(lineAHacker, 0.2, 2.5);
 
                 yield return message("Mallory : " + mess.ToString() + " --> Bob");
                 yield return hideLine(lineBHacker);
                 yield return moveMail(rightHX, rightHY, topBX, topBY, 1.5, 0.5);
-                yield return ShowOut(lineBHacker, 1, 2);
+                yield return ShowOut(lineBHacker, 0.2, 2.5);
 
+                mess.Length = 0;
+                n = _random.Next(20);
+                for (int x = 0; x < n; x++)
+                {
+                    int c = _random.Next(30);
+                    if (c >= 26)
+                    {
+                        mess.Append(" ");
+                    }
+                    else
+                    {
+                        mess.Append((char)('a' + c));
+                    }
+                }
                 yield return message("Bob : " + mess.ToString() + " --> Mallory");
                 yield return hideLine(lineBHacker);
                 yield return moveMail(topBX, topBY, rightHX, rightHY, 1.5, 0.5);
-                yield return ShowOut(lineBHacker, 1, 2);
+                yield return ShowOut(lineBHacker, 0.2, 2.5);
 
                 yield return message("Mallory : " + mess.ToString() + " --> Alice");
                 yield return hideLine(lineAHacker);
                 yield return moveMail(leftHX, leftHY, topAX, topAY, 1.5, 1.0);
-                yield return ShowOut(lineAHacker, 1, 2);
+                yield return ShowOut(lineAHacker, 0.2, 2.5);
             }
 
             yield return message("");
             yield return hideLine(lineAHacker);
             yield return hideLine(lineBHacker);
+            yield return setPlay(true);
         }
 
         private IEnumerator<Action<Action>> _actions;
@@ -313,6 +345,12 @@ namespace ModelDanSimulasi
                 fade.Completed += (s, e) => completed();
                 line.BeginAnimation(Line.OpacityProperty, fade);
             };
+        }
+
+        private Action<Action> setPlay(bool enable)
+        {
+            play.IsEnabled = enable;
+            return completed => { completed(); };
         }
 
         private Action<Action> message(string pesan)
